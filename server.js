@@ -1,3 +1,4 @@
+
 const express = require("express");
 
 const app = express();
@@ -5,70 +6,69 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Home route
 app.get("/", (req, res) => {
-  res.send("Welcome to the Node.js Calculator API!");
+  res.json({
+    message: "Welcome to the Node.js Calculator API!",
+    endpoints: [
+      "/add?a=10&b=5",
+      "/subtract?a=10&b=5",
+      "/multiply?a=10&b=5",
+      "/divide?a=10&b=5"
+    ]
+  });
 });
 
-// Addition
-app.post("/add", (req, res) => {
-  const { a, b } = req.body;
+function getNumbers(req, res) {
+  const { a, b } = req.query;
 
-  if (typeof a !== "number" || typeof b !== "number") {
+  if (
+    a === undefined ||
+    b === undefined ||
+    a.trim() === "" ||
+    b.trim() === "" ||
+    !Number.isFinite(Number(a)) ||
+    !Number.isFinite(Number(b))
+  ) {
+    res.status(400).json({
+      error: "Please provide valid numbers a and b."
+    });
+    return null;
+  }
+
+  return { a: Number(a), b: Number(b) };
+}
+
+app.get("/add", (req, res) => {
+  const n = getNumbers(req, res);
+  if (!n) return;
+  res.json({ result: n.a + n.b });
+});
+
+app.get("/subtract", (req, res) => {
+  const n = getNumbers(req, res);
+  if (!n) return;
+  res.json({ result: n.a - n.b });
+});
+
+app.get("/multiply", (req, res) => {
+  const n = getNumbers(req, res);
+  if (!n) return;
+  res.json({ result: n.a * n.b });
+});
+
+app.get("/divide", (req, res) => {
+  const n = getNumbers(req, res);
+  if (!n) return;
+
+  if (n.b === 0) {
     return res.status(400).json({
-      error: "Please provide two numbers: a and b",
+      error: "Cannot divide by zero."
     });
   }
 
-  res.json({ operation: "addition", result: a + b });
+  res.json({ result: n.a / n.b });
 });
 
-// Subtraction
-app.post("/subtract", (req, res) => {
-  const { a, b } = req.body;
-
-  if (typeof a !== "number" || typeof b !== "number") {
-    return res.status(400).json({
-      error: "Please provide two numbers: a and b",
-    });
-  }
-
-  res.json({ operation: "subtraction", result: a - b });
-});
-
-// Multiplication
-app.post("/multiply", (req, res) => {
-  const { a, b } = req.body;
-
-  if (typeof a !== "number" || typeof b !== "number") {
-    return res.status(400).json({
-      error: "Please provide two numbers: a and b",
-    });
-  }
-
-  res.json({ operation: "multiplication", result: a * b });
-});
-
-// Division
-app.post("/divide", (req, res) => {
-  const { a, b } = req.body;
-
-  if (typeof a !== "number" || typeof b !== "number") {
-    return res.status(400).json({
-      error: "Please provide two numbers: a and b",
-    });
-  }
-
-  if (b === 0) {
-    return res.status(400).json({
-      error: "Cannot divide by zero",
-    });
-  }
-
-  res.json({ operation: "division", result: a / b });
-});
-
-// Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Calculator API running on port ${PORT}`);
 });
