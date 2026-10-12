@@ -37,6 +37,34 @@ function getNumbers(req, res) {
 
   return { a: Number(a), b: Number(b) };
 }
+app.post("/percent", (req, res) => {
+  const { a, b } = req.body;
+
+  if (
+    typeof a !== "number" ||
+    typeof b !== "number" ||
+    !Number.isFinite(a) ||
+    !Number.isFinite(b)
+  ) {
+    return res.status(400).json({
+      error: "Please provide two valid numbers: a and b",
+    });
+  }
+
+  if (b === 0) {
+    return res.status(400).json({
+      error: "Cannot calculate percentage when b is zero",
+    });
+  }
+
+  const result = (a / b) * 100;
+
+  return res.json({
+    a,
+    b,
+    percentage: result,
+  });
+});
 
 app.get("/add", (req, res) => {
   const n = getNumbers(req, res);
